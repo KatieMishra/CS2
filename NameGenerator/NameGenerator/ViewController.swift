@@ -32,8 +32,7 @@ class ViewController: UIViewController {
         self.nameList.append(realNameText!)
         addToTransitionTable(realNameText!)
         //Generate a random name starting from the first character of the real name
-        //Is this the correct way to typecast?
-        self.ninjaName.text = createMarkovChain(Character(realNameText![0]), realNameText!.length)
+        self.ninjaName.text = createMarkovChain(realNameText![realNameText!.startIndex], length: NSString(string: realNameText!).length)
     }
     
     //Loop over all names in initial list and break them down to put in markov dictionary
@@ -44,18 +43,13 @@ class ViewController: UIViewController {
     }
     
     //Add name to dicionary by linking each character to its proceeding character
-    private func addToTransitionTable(name: NSString) {
-        //how to find the length of a string?
-        for i in name.length - 1 as Int {
-            for char in name {
-                //add self?
-                if markovChain[char] != nil {
-                    //add self?
-                    markovChain[char].append(name[n+1])
-                } else {
-                    //add self?
-                    markovChain[char] = name[n+1]
-                }
+    private func addToTransitionTable(name: String) {
+        for char in name.characters {
+            var charIndex = name.characters.indexOf(char)
+            if markovChain[char] != nil && name[charIndex!] != name[name.endIndex] {
+                markovChain[char]?.append(name.startIndex.advancedBy(1))
+            } else {
+                markovChain[char] = name[nextIndex]
             }
         }
     }
@@ -65,16 +59,18 @@ class ViewController: UIViewController {
         var ninjaName = ""
         //Key is initially the first letter in the real name
         ninjaName.append(key)
-        for i in length {
+        var i = length
+        while i != 0 {
             ninjaName.append(generateNextChar(key))
+            i -= 1
         }
         return ninjaName
     }
     
     //Choose a random character from the values associated with a given key
-    private func generateNextChar(key: String) -> Character {
+    private func generateNextChar(key: Character) -> Character {
         var array = markovChain[key]
-        return array[Int(arc4random_uniform(UInt32(array.count)))]
+        return array![Int(arc4random_uniform(UInt32(array!.count)))]
     }
 
 }
